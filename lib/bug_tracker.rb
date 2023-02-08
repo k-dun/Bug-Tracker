@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'CSV'
+require 'csv'
 
-@issues = []
+@issue = Hash.new
+@all_issues = []
 @bug_tracker_version = "1.0"
 
 # USER INTERFACE METHODS
@@ -19,7 +20,7 @@ end
 # Print application's header.
 def print_header
   puts "-------------"
-  puts "Welcome to Bug Tracker #{@bug_tracker_version}! (author: kdun)"
+  puts "Welcome to Bug Tracker #{@bug_tracker_version}! (author: KDUN)"
   puts "-------------"
 end
 
@@ -65,14 +66,95 @@ end
 
 # CREATE, READ, UPDATE, DELETE METHODS
 
-# Create an issue (bug). Includes a title, description, status.
+# Create an issue (bug). Includes a title, description, priority, status.
 def create_issue
 
+  while true do
+    puts "Submit information about the issue below.. "
+    puts "-------------"
+    print "Title: "
+    title = STDIN.gets.chomp
+
+    title = "(Missing title)" if title == ""
+
+    print "Description: "
+    description = STDIN.gets.chomp
+
+    description = "(Missing description)" if description == ""
+
+    priority = ""
+
+    until ("1".."5").include?(priority) do
+      print "Priority (1-5): "
+      priority = STDIN.gets.chomp
+    end
+    
+    status = "OPEN"
+
+    puts "-------------"
+    puts "Title: #{title}"
+    puts "Description: #{description}"
+    puts "Priority level: #{priority}"
+    puts "Status: #{status}"
+    puts "-------------"
+    print "Submit issue? (y/n) : "
+    submit = STDIN.gets.chomp.downcase
+
+    if submit == "y"
+      @issue = { title: title, description: description, priority: priority, status: status }
+      break
+    elsif submit == "n"
+      print "Do you want to try again? (y/n) : "
+      submit = STDIN.gets.chomp
+
+      submit == "y" ? next : break
+    else
+      puts "Wrong input. Try again!"
+      next
+    end
+  end
+
+  save_issue()
+  puts "Issue has been successfully added!"
+end
+
+# Save issue to the issues.csv file.
+def save_issue
+  CSV.open("issues.csv", "a+") do |csv|
+    csv << [@issue[:title], @issue[:description], @issue[:priority], @issue[:status]]
+  end
 end
 
 # Print all issues.
 def print_all_issues
+  load_all_issues()
+  print_all_issues_header()
+  print_issues()
+end
 
+# Print header for all the issues.
+def print_all_issues_header
+  puts "-------------"
+  puts "Here are all current issues: "
+end
+
+def load_all_issues
+  @issues = []
+
+  CSV.foreach("issues.csv") do |line|
+    @issues << { title: line[0], description: line[1], priority: line[2], status: line[3] }
+  end
+end
+
+def print_issues
+  @issues.each do |issue|
+    puts "-------------"
+    puts "Title: #{issue[:title]}"
+    puts "Description: #{issue[:description]}"
+    puts "Priority level: #{issue[:priority]}"
+    puts "Status: #{issue[:status]}"
+    puts "-------------"
+  end
 end
 
 # Update issue status.
@@ -84,8 +166,6 @@ end
 def delete_issue
 
 end
-
-# OTHER METHODS
 
 # Filter issues by status.
 def filter_issues
