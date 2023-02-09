@@ -11,7 +11,8 @@ require 'csv'
 # Main interactive menu to help navigate and interact with the bug tracker.
 def interactive_menu
   print_header()
-  loop do 
+  loop do
+    load_all_issues()
     print_menu()
     menu_options(STDIN.gets.chomp)
   end
@@ -88,15 +89,15 @@ def create_issue
       print "Priority (1-5): "
       priority = STDIN.gets.chomp
     end
-    
-    status = "OPEN"
-    time = Time.now.to_s[0..-7]
 
     puts "-------------"
     print "Submit issue? (y/n) : "
     submit = STDIN.gets.chomp.downcase
 
     if submit == "y"
+      status = "OPEN"
+      time = Time.now.to_s[0..-7]
+
       @issue = { title: title, description: description, priority: priority, status: status, time: time }
       break
     elsif submit == "n"
@@ -111,7 +112,6 @@ def create_issue
   end
 
   save_issue()
-  puts "Issue has been successfully added!"
 end
 
 # SAVE METHODS
@@ -123,13 +123,13 @@ def save_issue
   end
 
   puts "Issue saved to issues.csv file!"
+  puts ""
 end
 
 # PRINT METHODS
 
 # Print all issues (main method).
 def print_all_issues
-  load_all_issues()
   print_all_issues_header()
   print_issues()
 end
@@ -143,19 +143,25 @@ end
 # Print all issues.
 def print_issues
   @all_issues.each do |issue|
-    puts "-------------"
+    puts ""
     puts "Title: #{issue[:title]}"
     puts "Description: #{issue[:description]}"
     puts "Priority level: #{issue[:priority]}"
     puts "Status: #{issue[:status]}"
     puts "Time: #{issue[:time]}"
+    puts ""
   end
 end
 
 # LOAD METHODS
 
-# Load all issues from a file
+# Pre-load all issues from a file
 def load_all_issues
+  load_issues() if File.exist?("issues.csv")
+end
+
+# Load all issues
+def load_issues
   @all_issues = []
 
   CSV.foreach("issues.csv") do |line|
@@ -209,4 +215,4 @@ end
 
 # MAIN 
 
-interactive_menu
+interactive_menu()
