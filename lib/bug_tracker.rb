@@ -90,18 +90,14 @@ def create_issue
     end
     
     status = "OPEN"
+    time = Time.now.to_s[0..-7]
 
-    puts "-------------"
-    puts "Title: #{title}"
-    puts "Description: #{description}"
-    puts "Priority level: #{priority}"
-    puts "Status: #{status}"
     puts "-------------"
     print "Submit issue? (y/n) : "
     submit = STDIN.gets.chomp.downcase
 
     if submit == "y"
-      @issue = { title: title, description: description, priority: priority, status: status }
+      @issue = { title: title, description: description, priority: priority, status: status, time: time }
       break
     elsif submit == "n"
       print "Do you want to try again? (y/n) : "
@@ -118,14 +114,20 @@ def create_issue
   puts "Issue has been successfully added!"
 end
 
+# SAVE METHODS
+
 # Save issue to the issues.csv file.
 def save_issue
   CSV.open("issues.csv", "a+") do |csv|
-    csv << [@issue[:title], @issue[:description], @issue[:priority], @issue[:status]]
+    csv << [@issue[:title], @issue[:description], @issue[:priority], @issue[:status], @issue[:time]]
   end
+
+  puts "Issue saved to issues.csv file!"
 end
 
-# Print all issues.
+# PRINT METHODS
+
+# Print all issues (main method).
 def print_all_issues
   load_all_issues()
   print_all_issues_header()
@@ -138,22 +140,26 @@ def print_all_issues_header
   puts "Here are all current issues: "
 end
 
-def load_all_issues
-  @issues = []
-
-  CSV.foreach("issues.csv") do |line|
-    @issues << { title: line[0], description: line[1], priority: line[2], status: line[3] }
-  end
-end
-
+# Print all issues.
 def print_issues
-  @issues.each do |issue|
+  @all_issues.each do |issue|
     puts "-------------"
     puts "Title: #{issue[:title]}"
     puts "Description: #{issue[:description]}"
     puts "Priority level: #{issue[:priority]}"
     puts "Status: #{issue[:status]}"
-    puts "-------------"
+    puts "Time: #{issue[:time]}"
+  end
+end
+
+# LOAD METHODS
+
+# Load all issues from a file
+def load_all_issues
+  @all_issues = []
+
+  CSV.foreach("issues.csv") do |line|
+    @all_issues << { title: line[0], description: line[1], priority: line[2], status: line[3], time: line[4] }
   end
 end
 
@@ -167,10 +173,24 @@ def delete_issue
 
 end
 
-# Filter issues by status.
-def filter_issues
+# FILTERING METHODS
+
+# Filter by title.
+def filter_by_title
 
 end
+
+# Filter by priority.
+def filter_by_priority
+
+end
+
+# Filter by status.
+def filter_by_status
+
+end
+
+# REPORT METHODS
 
 # Generate report to a file.
 def generate_report
