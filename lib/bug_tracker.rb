@@ -95,10 +95,12 @@ def create_issue
     submit = STDIN.gets.chomp.downcase
 
     if submit == "y"
+      id = rand(1000..9999).to_s
       status = "OPEN"
       time = Time.now.to_s[0..-7]
 
-      @issue = { title: title, description: description, priority: priority, status: status, time: time }
+      @issue = { id: id, title: title, description: description, priority: priority, status: status, time: time }
+      save_issue()
       break
     elsif submit == "n"
       print "Do you want to try again? (y/n) : "
@@ -110,8 +112,6 @@ def create_issue
       next
     end
   end
-
-  save_issue()
 end
 
 # SAVE METHODS
@@ -119,7 +119,7 @@ end
 # Save issue to the issues.csv file.
 def save_issue
   CSV.open("issues.csv", "a+") do |csv|
-    csv << [@issue[:title], @issue[:description], @issue[:priority], @issue[:status], @issue[:time]]
+    csv << [@issue[:id], @issue[:title], @issue[:description], @issue[:priority], @issue[:status], @issue[:time]]
   end
 
   puts "Issue saved to issues.csv file!"
@@ -130,8 +130,12 @@ end
 
 # Print all issues (main method).
 def print_all_issues
-  print_all_issues_header()
-  print_issues()
+  if File.empty?("issues.csv")
+    puts "There are currently no issues tracked!"
+  else
+    print_all_issues_header()
+    print_issues()
+  end
 end
 
 # Print header for all the issues.
@@ -144,7 +148,7 @@ end
 def print_issues
   @all_issues.each do |issue|
     puts ""
-    puts "Title: #{issue[:title]}"
+    puts "ID: #{issue[:id]} | Title: #{issue[:title]}"
     puts "Description: #{issue[:description]}"
     puts "Priority level: #{issue[:priority]}"
     puts "Status: #{issue[:status]}"
@@ -165,14 +169,37 @@ def load_issues
   @all_issues = []
 
   CSV.foreach("issues.csv") do |line|
-    @all_issues << { title: line[0], description: line[1], priority: line[2], status: line[3], time: line[4] }
+    @all_issues << { id: line[0], title: line[1], description: line[2], priority: line[3], status: line[4], time: line[5] }
   end
 end
 
+# UPDATE METHODS
+
 # Update issue status.
 def update_status
+  issue_status = ["OPEN", "IN PROGRESS", "FIXED"]
+  puts "Choose the ID of the issue you want to update the status of: "
+  filter_by_title()
+  issue_id = STDIN.gets.chomp
 
+  issue_index = load_specific_issue(issue_id)
+
+  puts "What would you like to change it to: "
+  puts issue_status.join(" / ")
+  new_status = STDIN.gets.chomp
+
+  @all_issues[issue_index][:status] = new_status
+
+  CSV.open("issues.csv", "w") do |csv|
+    @all_issues.each do |issue|
+      csv << [issue[:id], issue[:title], issue[:description], issue[:priority], issue[:status], issue[:time]]
+    end
+  end
+
+  puts "The status of issue ID: #{issue_id}, has been changed to #{new_status}."
 end
+
+# DELETE METHODS
 
 # Delete issue record.
 def delete_issue
@@ -183,7 +210,9 @@ end
 
 # Filter by title.
 def filter_by_title
-
+  @all_issues.each do |issue|
+    puts "#{issue[:id]} | #{issue[:title]} | Status: #{issue[:status]}"
+  end
 end
 
 # Filter by priority.
@@ -193,6 +222,16 @@ end
 
 # Filter by status.
 def filter_by_status
+
+end
+
+def load_specific_issue(issue_id)
+  @all_issues.each_with_index do |issue, index|
+    return index if issue[:id] == issue_id
+  end
+end
+
+def change_issue_status
 
 end
 
