@@ -160,7 +160,7 @@ end
 # Print snippets of the issues.
 def print_snippets
   @all_issues.each do |issue|
-    puts "#{issue[:id]} | #{issue[:title]} | Status: #{issue[:status]}"
+    puts "#{issue[:id]} | #{issue[:title]} | Priority: #{issue[:priority]} | Status: #{issue[:status]}"
   end
 end
 
@@ -204,6 +204,30 @@ def update_status
   end
 
   puts "The status of issue ID: #{issue_id}, has been changed to #{new_status}."
+end
+
+# Update issue priority.
+def update_priority
+  issue_priority = ("1".."5").to_a
+  puts "Choose the ID of the issue you want to update the priority of: "
+  print_snippets()
+  issue_id = STDIN.gets.chomp
+
+  issue_index = load_issue_by_id(issue_id)
+
+  puts "What would you like to change it to: "
+  puts issue_priority.join(" / ")
+  new_priority = STDIN.gets.chomp
+
+  @all_issues[issue_index][:priority] = new_priority
+
+  CSV.open("issues.csv", "w") do |csv|
+    @all_issues.each do |issue|
+      csv << [issue[:id], issue[:title], issue[:description], issue[:priority], issue[:status], issue[:time]]
+    end
+  end
+
+  puts "The priority of issue ID: #{issue_id}, has been changed to #{new_priority}."
 end
 
 # FILTERING METHODS
