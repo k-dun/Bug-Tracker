@@ -30,11 +30,12 @@ end
 def print_menu
   puts "1. Create an issue."
   puts "2. Print all issues."
-  puts "3. Filter by status."
-  puts "4. Filter by priority."
-  puts "5. Update status of an issue."
-  puts "6. Update priority of an issue."
-  puts "7. Exit."
+  puts "3. Print all active issues."
+  puts "4. Filter by status."
+  puts "5. Filter by priority."
+  puts "6. Update status of an issue."
+  puts "7. Update priority of an issue."
+  puts "8. Exit."
 end
 
 # Select menu option.
@@ -45,14 +46,16 @@ def menu_options(menu_choice)
   when "2"
     print_all_issues()
   when "3"
-    filter_by_status()
+    print_all_active_issues()
   when "4"
-    filter_by_priority()
+    filter_by_status()
   when "5"
-    update_status()
+    filter_by_priority()
   when "6"
-    update_priority()
+    update_status()
   when "7"
+    update_priority()
+  when "8"
     puts "Quitting Bug Tracker #{@bug_tracker_version} ..."
     exit
   else
@@ -138,10 +141,32 @@ def print_all_issues
   end
 end
 
+# Print all active issues. (exclude those with 'FIXED' status)
+def print_all_active_issues
+  print_all_active_issues_header()
+  @all_issues.each do |issue|
+    if issue[:status] != "FIXED"
+      puts ""
+      puts "ID: #{issue[:id]} | Title: #{issue[:title]}"
+      puts "Description: #{issue[:description]}"
+      puts "Priority level: #{issue[:priority]}"
+      puts "Status: #{issue[:status]}"
+      puts "Time: #{issue[:time]}"
+      puts ""
+    end
+  end
+end
+
 # Print header for all the issues.
 def print_all_issues_header
   puts "-------------"
-  puts "Here are all current issues: "
+  puts "Here are all the issues: "
+end
+
+# Print header for all active issues.
+def print_all_active_issues_header
+  puts "-------------"
+  puts "Here are all the issues: "
 end
 
 # Print all issues.
