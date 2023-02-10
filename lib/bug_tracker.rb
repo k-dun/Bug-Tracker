@@ -30,8 +30,8 @@ end
 def print_menu
   puts "1. Create an issue."
   puts "2. Print all issues."
-  puts "3. Print by status."
-  puts "4. Print by priority."
+  puts "3. Filter by status."
+  puts "4. Filter by priority."
   puts "5. Update status of an issue."
   puts "6. Update priority of an issue."
   puts "7. Exit."
@@ -45,9 +45,9 @@ def menu_options(menu_choice)
   when "2"
     print_all_issues()
   when "3"
-    filter_issues()
+    filter_by_status()
   when "4"
-    
+    filter_by_priority()
   when "5"
     update_status()
   when "6"
@@ -91,10 +91,10 @@ def create_issue
     if submit == "y"
       while true do
         id = rand(1000..9999).to_s
-        if existing_ids.include?(id)
+        if @existing_ids.include?(id)
           next
         else
-          existing_ids << id
+          @existing_ids << id
           break
         end
       end
@@ -121,7 +121,7 @@ end
 
 # Save issue to the issues.csv file.
 def save_issue
-  CSV.open("issues.csv", "w") do |csv|
+  CSV.open("issues.csv", "a") do |csv|
     csv << [@issue[:id], @issue[:title], @issue[:description], @issue[:priority], @issue[:status], @issue[:time]]
   end
 end
@@ -210,12 +210,44 @@ end
 
 # Filter by status.
 def filter_by_status
+  puts "Print only issues with desired status."
+  print "Choose status (OPEN / IN PROGRESS / FIXED): "
+  status = STDIN.gets.chomp
 
+  @all_issues.each do |issue|
+    if issue[:status] == status
+      puts ""
+      puts "ID: #{issue[:id]} | Title: #{issue[:title]}"
+      puts "Description: #{issue[:description]}"
+      puts "Priority level: #{issue[:priority]}"
+      puts "Status: #{issue[:status]}"
+      puts "Time: #{issue[:time]}"
+      puts ""
+    end
+  end
+
+  puts "Above are all the issues with the '#{status}' status."
 end
 
 # Filter by priority.
 def filter_by_priority
+  puts "Print only issues with desired priority."
+  print "Choose status (1-5): "
+  priority = STDIN.gets.chomp
 
+  @all_issues.each do |issue|
+    if issue[:priority] == priority
+      puts ""
+      puts "ID: #{issue[:id]} | Title: #{issue[:title]}"
+      puts "Description: #{issue[:description]}"
+      puts "Priority level: #{issue[:priority]}"
+      puts "Status: #{issue[:status]}"
+      puts "Time: #{issue[:time]}"
+      puts ""
+    end
+  end
+
+  puts "Above are all the issues with the '#{priority}' priority."
 end
 
 def load_issue_by_id(issue_id)
