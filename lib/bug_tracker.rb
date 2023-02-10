@@ -5,6 +5,7 @@ require 'csv'
 @issue = Hash.new
 @all_issues = []
 @bug_tracker_version = "1.0"
+@existing_ids = []
 
 # USER INTERFACE METHODS
 
@@ -29,13 +30,11 @@ end
 def print_menu
   puts "1. Create an issue."
   puts "2. Print all issues."
-  puts "3. Filter and print issues."
-  puts "4. Update status of an issue."
-  puts "5. Delete an issue."
-  puts "6. Generate a report."
-  puts "7. Print recent report."
-  puts "8. View commits and updates of Bug Tracker 1.0."
-  puts "9. Exit."
+  puts "3. Print by status."
+  puts "4. Print by priority."
+  puts "5. Update status of an issue."
+  puts "6. Update priority of an issue."
+  puts "7. Exit."
 end
 
 # Select menu option.
@@ -48,16 +47,12 @@ def menu_options(menu_choice)
   when "3"
     filter_issues()
   when "4"
-    update_status()
+    
   when "5"
-    delete_issue()
+    update_status()
   when "6"
-    generate_report()
+    update_priority()
   when "7"
-    print_report()
-  when "8"
-    bug_tracker_updates()
-  when "9"
     puts "Quitting Bug Tracker #{@bug_tracker_version} ..."
     exit
   else
@@ -67,9 +62,8 @@ end
 
 # CREATE, READ, UPDATE, DELETE METHODS
 
-# Create an issue (bug). Includes a title, description, priority, status.
+# Create an issue (bug). Includes an ID, title, description, priority, status, time.
 def create_issue
-
   while true do
     puts "Submit information about the issue below.. "
     puts "-------------"
@@ -95,7 +89,16 @@ def create_issue
     submit = STDIN.gets.chomp.downcase
 
     if submit == "y"
-      id = rand(1000..9999).to_s
+      while true do
+        id = rand(1000..9999).to_s
+        if existing_ids.include?(id)
+          next
+        else
+          existing_ids << id
+          break
+        end
+      end
+
       status = "OPEN"
       time = Time.now.to_s[0..-7]
 
@@ -118,12 +121,9 @@ end
 
 # Save issue to the issues.csv file.
 def save_issue
-  CSV.open("issues.csv", "a+") do |csv|
+  CSV.open("issues.csv", "w") do |csv|
     csv << [@issue[:id], @issue[:title], @issue[:description], @issue[:priority], @issue[:status], @issue[:time]]
   end
-
-  puts "Issue saved to issues.csv file!"
-  puts ""
 end
 
 # PRINT METHODS
@@ -157,6 +157,13 @@ def print_issues
   end
 end
 
+# Print snippets of the issues.
+def print_snippets
+  @all_issues.each do |issue|
+    puts "#{issue[:id]} | #{issue[:title]} | Status: #{issue[:status]}"
+  end
+end
+
 # LOAD METHODS
 
 # Pre-load all issues from a file
@@ -168,7 +175,7 @@ end
 def load_issues
   @all_issues = []
 
-  CSV.foreach("issues.csv") do |line|
+  CSV.foreach("issues.csv", "r") do |line|
     @all_issues << { id: line[0], title: line[1], description: line[2], priority: line[3], status: line[4], time: line[5] }
   end
 end
@@ -179,10 +186,10 @@ end
 def update_status
   issue_status = ["OPEN", "IN PROGRESS", "FIXED"]
   puts "Choose the ID of the issue you want to update the status of: "
-  filter_by_title()
+  print_snippets()
   issue_id = STDIN.gets.chomp
 
-  issue_index = load_specific_issue(issue_id)
+  issue_index = load_issue_by_id(issue_id)
 
   puts "What would you like to change it to: "
   puts issue_status.join(" / ")
@@ -199,20 +206,11 @@ def update_status
   puts "The status of issue ID: #{issue_id}, has been changed to #{new_status}."
 end
 
-# DELETE METHODS
-
-# Delete issue record.
-def delete_issue
-
-end
-
 # FILTERING METHODS
 
-# Filter by title.
-def filter_by_title
-  @all_issues.each do |issue|
-    puts "#{issue[:id]} | #{issue[:title]} | Status: #{issue[:status]}"
-  end
+# Filter by status.
+def filter_by_status
+
 end
 
 # Filter by priority.
@@ -220,36 +218,10 @@ def filter_by_priority
 
 end
 
-# Filter by status.
-def filter_by_status
-
-end
-
-def load_specific_issue(issue_id)
+def load_issue_by_id(issue_id)
   @all_issues.each_with_index do |issue, index|
     return index if issue[:id] == issue_id
   end
-end
-
-def change_issue_status
-
-end
-
-# REPORT METHODS
-
-# Generate report to a file.
-def generate_report
-
-end
-
-# Print report from a file.
-def print_report
-
-end
-
-# Print history of updates to the Bug Tracker 
-def bug_tracker_updates
-
 end
 
 # MAIN 
